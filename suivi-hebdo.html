@@ -15,6 +15,9 @@
 
   <script src="auth-config.js"></script>
   <script src="auth.js"></script>
+  <script src="portal-config.js"></script>
+  <script src="teamfit-data.js"></script>
+  <script src="portal-data.js"></script>
   <script>
     window.TFBAuth.requireAuth();
   </script>
@@ -640,6 +643,253 @@
     });
 
     renderWeek();
+  </script>
+  <script>
+    (function () {
+      const coachParams = new URLSearchParams(window.location.search);
+      const coachClientSlug = coachParams.get("client") || "chloe-blaison";
+      const coachClient = window.TFBData.getClient(coachClientSlug);
+      const currentIso = window.TFBData.getISOWeekInfo(new Date());
+
+      const weekLabelNode = document.getElementById("weekLabel");
+      const tableBodyNode = document.getElementById("measureTableBody");
+      const weekTitleText = document.querySelector(".week-title p");
+      const pageTitle = document.querySelector(".title-wrap p");
+      const commentsHeadText = document.querySelector(".comments-card .section-head p");
+      const commentsContent = document.querySelector(".comments-content");
+
+      if (pageTitle) {
+        pageTitle.textContent = `Lecture des mensurations de ${coachClient.firstName} ${coachClient.lastName}.`;
+      }
+
+      if (weekTitleText) {
+        weekTitleText.textContent = "Actualisez a la demande ou revenez sur l'onglet pour recharger les dernieres donnees du portail client.";
+      }
+
+      if (commentsHeadText) {
+        commentsHeadText.textContent = "Commentaire client et note coach pour la semaine selectionnee.";
+      }
+
+      const previousButton = document.getElementById("prevWeek");
+      const nextButton = document.getElementById("nextWeek");
+      const safePrevButton = previousButton.cloneNode(true);
+      const safeNextButton = nextButton.cloneNode(true);
+      previousButton.replaceWith(safePrevButton);
+      nextButton.replaceWith(safeNextButton);
+
+      const weekActions = document.querySelector(".week-actions");
+      const refreshButton = document.createElement("button");
+      refreshButton.className = "btn";
+      refreshButton.type = "button";
+      refreshButton.id = "refreshWeekData";
+      refreshButton.textContent = "Actualiser";
+      if (weekActions) {
+        weekActions.appendChild(refreshButton);
+      }
+
+      commentsContent.innerHTML = `
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; font-weight: 700; margin-bottom: 8px;">
+            Commentaire client
+          </div>
+          <div id="clientCommentReadOnly" style="border: 1px solid #e5e7eb; background: #f8fafc; border-radius: 16px; padding: 14px; min-height: 106px; color: #334155; line-height: 1.65;">
+            Aucun commentaire pour cette semaine.
+          </div>
+        </div>
+        <textarea id="coachCommentInput" placeholder="Ajouter une note coach sur cette semaine, les points d'attention et l'analyse a conserver..."></textarea>
+        <div class="comment-actions">
+          <button class="save-btn" id="saveCoachCommentBtn">Enregistrer la note coach</button>
+        </div>
+        <div id="coachSaveStatus" style="display:none; margin-top: 12px; font-size: 0.9rem; font-weight: 600;"></div>
+      `;
+
+      const clientCommentReadOnly = document.getElementById("clientCommentReadOnly");
+      const coachCommentInput = document.getElementById("coachCommentInput");
+      const saveCoachCommentBtn = document.getElementById("saveCoachCommentBtn");
+      const coachSaveStatus = document.getElementById("coachSaveStatus");
+
+      const coachState = {
+        records: [],
+        currentIndex: 0,
+        currentKey: window.TFBData.formatWeekKey(currentIso.isoYear, currentIso.isoWeek)
+      };
+
+      function formatMeasure(value) {
+        if (value === null || value === undefined || value === "") {
+          return "—";
+        }
+
+        const numericValue = Number(value);
+        return Number.isInteger(numericValue) ? String(numericValue) : numericValue.toFixed(1);
+      }
+
+      function getRecordKey(record) {
+        return window.TFBData.formatWeekKey(record.isoYear, record.isoWeek);
+      }
+
+      function ensureCurrentWeekRecord(records) {
+        const currentKey = window.TFBData.formatWeekKey(currentIso.isoYear, currentIso.isoWeek);
+
+        if (records.some((record) => getRecordKey(record) === currentKey)) {
+          return records;
+        }
+
+        const emptyRecord = {
+          ...window.TFBData.createEmptyCheckin(),
+          isoYear: currentIso.isoYear,
+          isoWeek: currentIso.isoWeek
+        };
+
+        return [...records, emptyRecord].sort((left, right) => {
+          if (left.isoYear === right.isoYear) {
+            return left.isoWeek - right.isoWeek;
+          }
+          return left.isoYear - right.isoYear;
+        });
+      }
+
+      function setCoachStatus(message, tone) {
+        coachSaveStatus.textContent = message;
+        coachSaveStatus.style.display = "block";
+        coachSaveStatus.style.color = tone === "error" ? "#991b1b" : "#166534";
+      }
+
+      function buildEvolution(currentValue, previousValue) {
+        const currentNumber = Number(currentValue);
+        const previousNumber = Number(previousValue);
+
+        if (Number.isNaN(currentNumber) || Number.isNaN(previousNumber)) {
+          return {
+            className: "neutral",
+            text: "—"
+          };
+        }
+
+        if (currentNumber === previousNumber) {
+          return { className: "neutral", text: "0" };
+        }
+
+        const diff = Math.abs(currentNumber - previousNumber);
+        const formatted = Number.isInteger(diff) ? String(diff) : diff.toFixed(1);
+
+        return currentNumber < previousNumber
+          ? { className: "positive", text: `-${formatted}` }
+          : { className: "negative", text: `+${formatted}` };
+      }
+
+      function renderCurrentWeek() {
+        const currentRecord = coachState.records[coachState.currentIndex];
+        const previousRecord = coachState.records[coachState.currentIndex - 1] || null;
+
+        if (!currentRecord) {
+          tableBodyNode.innerHTML = "";
+          clientCommentReadOnly.textContent = "Aucune donnee disponible.";
+          coachCommentInput.value = "";
+          weekLabelNode.textContent = "Aucune semaine";
+          safePrevButton.disabled = true;
+          safeNextButton.disabled = true;
+          return;
+        }
+
+        weekLabelNode.textContent = `Semaine ${currentRecord.isoWeek}`;
+        tableBodyNode.innerHTML = "";
+
+        window.TFBData.weeklyFields.forEach(function (field) {
+          const currentValue = currentRecord[field.key];
+          const previousValue = previousRecord ? previousRecord[field.key] : "";
+          const evolution = buildEvolution(currentValue, previousValue);
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td class="measure-name">${field.label}</td>
+            <td class="value-cell">${formatMeasure(currentValue)}</td>
+            <td class="value-cell">${formatMeasure(previousValue)}</td>
+            <td><span class="evolution-badge ${evolution.className}">${evolution.text}</span></td>
+          `;
+          tableBodyNode.appendChild(row);
+        });
+
+        clientCommentReadOnly.textContent = currentRecord.commentaire || "Aucun commentaire client pour cette semaine.";
+        coachCommentInput.value = currentRecord.coachComment || "";
+        safePrevButton.disabled = coachState.currentIndex === 0;
+        safeNextButton.disabled = coachState.currentIndex === coachState.records.length - 1;
+      }
+
+      async function refreshCoachData() {
+        try {
+          const records = await window.TFBPortal.listCheckinsByClientSlug(coachClientSlug);
+          coachState.records = ensureCurrentWeekRecord(records);
+
+          const selectedIndex = coachState.records.findIndex(function (record) {
+            return getRecordKey(record) === coachState.currentKey;
+          });
+
+          coachState.currentIndex = selectedIndex >= 0 ? selectedIndex : coachState.records.length - 1;
+          coachState.currentKey = getRecordKey(coachState.records[coachState.currentIndex]);
+          renderCurrentWeek();
+        } catch (error) {
+          setCoachStatus(error.message || "Impossible de charger les donnees du client.", "error");
+        }
+      }
+
+      safePrevButton.addEventListener("click", function () {
+        if (coachState.currentIndex > 0) {
+          coachState.currentIndex -= 1;
+          coachState.currentKey = getRecordKey(coachState.records[coachState.currentIndex]);
+          renderCurrentWeek();
+        }
+      });
+
+      safeNextButton.addEventListener("click", function () {
+        if (coachState.currentIndex < coachState.records.length - 1) {
+          coachState.currentIndex += 1;
+          coachState.currentKey = getRecordKey(coachState.records[coachState.currentIndex]);
+          renderCurrentWeek();
+        }
+      });
+
+      saveCoachCommentBtn.addEventListener("click", async function () {
+        const selectedRecord = coachState.records[coachState.currentIndex];
+
+        if (!selectedRecord) {
+          return;
+        }
+
+        try {
+          const savedRecord = await window.TFBPortal.saveCoachComment(
+            coachClientSlug,
+            selectedRecord.isoYear,
+            selectedRecord.isoWeek,
+            coachCommentInput.value.trim()
+          );
+
+          coachState.records[coachState.currentIndex] = {
+            ...selectedRecord,
+            ...savedRecord
+          };
+          renderCurrentWeek();
+          setCoachStatus("Note coach enregistree.");
+        } catch (error) {
+          setCoachStatus(error.message || "Impossible d'enregistrer la note coach.", "error");
+        }
+      });
+
+      refreshButton.addEventListener("click", function () {
+        refreshCoachData();
+      });
+
+      window.addEventListener("focus", function () {
+        refreshCoachData();
+      });
+
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) {
+          refreshCoachData();
+        }
+      });
+
+      refreshCoachData();
+    })();
   </script>
 </body>
 </html>

@@ -12,6 +12,9 @@
 
   <script src="auth-config.js"></script>
   <script src="auth.js"></script>
+  <script src="portal-config.js"></script>
+  <script src="teamfit-data.js"></script>
+  <script src="portal-data.js"></script>
   <script>
     window.TFBAuth.requireAuth();
   </script>
@@ -371,7 +374,7 @@
 
         <div class="actions">
           <a href="suivi-hebdo.html?client=chloe-blaison" class="btn btn-primary" id="weeklyLink">Voir le suivi hebdo</a>
-          <a href="espace-coache.html?token=TFB7K2X9Q4M8P1L6R3N5V0ZC" class="btn" id="coachSpaceLink">Ouvrir l’espace coaché</a>
+          <a href="espace-coache.html" class="btn" id="coachSpaceLink">Ouvrir le portail client</a>
         </div>
       </div>
     </section>
@@ -485,13 +488,13 @@
         <div class="link-box">
           <div class="label">Lien coaché sécurisé</div>
           <div class="generated-link" id="generatedLink">
-            https://teamfitbrothers.github.io/app/espace-coache.html?token=TFB7K2X9Q4M8P1L6R3N5V0ZC
+            Preparation du lien client...
           </div>
 
           <div class="link-actions">
             <button class="btn" id="generateLinkBtn">Générer un nouveau lien</button>
             <button class="btn" id="copyLinkBtn">Copier le lien</button>
-            <a href="espace-coache.html?token=TFB7K2X9Q4M8P1L6R3N5V0ZC" class="btn" id="openCoachLink">Ouvrir le lien</a>
+            <a href="#" class="btn" id="openCoachLink">Ouvrir le lien</a>
           </div>
 
           <div class="copy-message" id="copyMessage">Lien copié.</div>
@@ -600,7 +603,9 @@
     }
 
     function buildCoachLink(token) {
-      return `https://teamfitbrothers.github.io/app/espace-coache.html?token=${token}`;
+      return window.TFBPortal
+        ? window.TFBPortal.getPortalUrl(token)
+        : new URL(`espace-coache.html?token=${encodeURIComponent(token)}`, window.location.href).toString();
     }
 
     let currentToken = "TFB7K2X9Q4M8P1L6R3N5V0ZC";
@@ -609,8 +614,8 @@
     function updateCoachLink() {
       currentLink = buildCoachLink(currentToken);
       generatedLink.textContent = currentLink;
-      openCoachLink.href = `espace-coache.html?token=${currentToken}`;
-      coachSpaceLink.href = `espace-coache.html?token=${currentToken}`;
+      openCoachLink.href = currentLink;
+      coachSpaceLink.href = currentLink;
     }
 
     generateLinkBtn.addEventListener("click", () => {
@@ -631,6 +636,144 @@
     });
 
     updateCoachLink();
+  </script>
+  <script>
+    (function () {
+      const portalClientKey = new URLSearchParams(window.location.search).get("client") || "chloe-blaison";
+      const portalClient = window.TFBData.getClient(portalClientKey);
+
+      function setTextContent(id, value) {
+        const node = document.getElementById(id);
+        if (node) {
+          node.textContent = value;
+        }
+      }
+
+      setTextContent("clientFullName", `${portalClient.firstName} ${portalClient.lastName}`);
+      setTextContent(
+        "clientSummary",
+        `Client suivi dans le cadre d'un accompagnement ${portalClient.objective.toLowerCase()} avec suivi hebdomadaire et releve de mensurations.`
+      );
+      setTextContent("clientObjectiveTag", `Objectif · ${portalClient.objective}`);
+      setTextContent("clientStartTag", `Debut · ${portalClient.startDate}`);
+      setTextContent("firstName", portalClient.firstName);
+      setTextContent("lastName", portalClient.lastName);
+      setTextContent("email", portalClient.email);
+      setTextContent("phone", portalClient.phone);
+      setTextContent("birthDate", portalClient.birthDate);
+      setTextContent("gender", portalClient.gender);
+      setTextContent("startDate", portalClient.startDateShort);
+      setTextContent("coach", portalClient.coach);
+      setTextContent("objective", portalClient.objective);
+      setTextContent("level", portalClient.level);
+      setTextContent("objectiveDetail", portalClient.objectiveDetail);
+      setTextContent("height", portalClient.height);
+      setTextContent("weight", portalClient.weight);
+      setTextContent("age", portalClient.age);
+      setTextContent("activity", portalClient.activity);
+      setTextContent("frequency", portalClient.frequency);
+      setTextContent("constraints", portalClient.constraints);
+      setTextContent("habits", portalClient.habits);
+      setTextContent("notes", portalClient.notes);
+
+      const weeklyLink = document.getElementById("weeklyLink");
+      if (weeklyLink) {
+        weeklyLink.href = `suivi-hebdo.html?client=${portalClientKey}`;
+      }
+
+      const linkLabel = document.querySelector(".link-box .label");
+      if (linkLabel) {
+        linkLabel.textContent = "Lien portail client";
+      }
+
+      const generatedLink = document.getElementById("generatedLink");
+      const copyMessage = document.getElementById("copyMessage");
+
+      function replaceNode(id, text) {
+        const currentNode = document.getElementById(id);
+        const nextNode = currentNode.cloneNode(true);
+        nextNode.textContent = text;
+        currentNode.replaceWith(nextNode);
+        return nextNode;
+      }
+
+      const generateLinkBtn = replaceNode("generateLinkBtn", "Generer un lien client");
+      const copyLinkBtn = replaceNode("copyLinkBtn", "Copier le lien");
+      const openCoachLink = replaceNode("openCoachLink", "Ouvrir le portail");
+      const coachSpaceLink = document.getElementById("coachSpaceLink");
+
+      if (coachSpaceLink) {
+        coachSpaceLink.textContent = "Ouvrir le portail client";
+        coachSpaceLink.target = "_blank";
+        coachSpaceLink.rel = "noreferrer";
+      }
+
+      openCoachLink.target = "_blank";
+      openCoachLink.rel = "noreferrer";
+
+      function setStatus(message) {
+        copyMessage.textContent = message;
+        copyMessage.style.display = "block";
+      }
+
+      function applyLinkResult(result) {
+        const portalUrl = result.portal_url;
+        generatedLink.textContent = portalUrl;
+        openCoachLink.href = portalUrl;
+
+        if (coachSpaceLink) {
+          coachSpaceLink.href = portalUrl;
+        }
+
+        setStatus(
+          result.storage_mode === "supabase"
+            ? "Lien client synchronise avec Supabase."
+            : "Lien client actif en mode local sur ce navigateur."
+        );
+      }
+
+      async function loadPortalLink(rotateToken) {
+        generateLinkBtn.disabled = true;
+
+        try {
+          const result = await window.TFBPortal.issuePortalLink(portalClient, {
+            rotateToken: rotateToken
+          });
+          applyLinkResult(result);
+        } catch (error) {
+          generatedLink.textContent = "Configuration du portail requise.";
+          openCoachLink.removeAttribute("href");
+          if (coachSpaceLink) {
+            coachSpaceLink.removeAttribute("href");
+          }
+          setStatus(error.message || "Impossible de generer le lien client.");
+        } finally {
+          generateLinkBtn.disabled = false;
+        }
+      }
+
+      generateLinkBtn.addEventListener("click", function () {
+        loadPortalLink(true);
+      });
+
+      copyLinkBtn.addEventListener("click", async function () {
+        const linkValue = generatedLink.textContent.trim();
+
+        if (!linkValue || !linkValue.startsWith("http")) {
+          setStatus("Generez d'abord un lien client valide.");
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(linkValue);
+          setStatus("Lien client copie.");
+        } catch (error) {
+          setStatus("Copie non disponible sur ce navigateur.");
+        }
+      });
+
+      loadPortalLink(false);
+    })();
   </script>
 </body>
 </html>

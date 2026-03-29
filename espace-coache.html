@@ -15,8 +15,13 @@
 
   <script src="auth-config.js"></script>
   <script src="auth.js"></script>
+  <script src="portal-config.js"></script>
+  <script src="teamfit-data.js"></script>
+  <script src="portal-data.js"></script>
   <script>
-    window.TFBAuth.requireAuth();
+    if (!new URLSearchParams(window.location.search).get("token")) {
+      window.TFBAuth.requireAuth();
+    }
   </script>
 
   <style>
@@ -678,6 +683,235 @@
 
     updateWeekLabels();
     loadWeekData(selectedWeek);
+  </script>
+  <script>
+    (function () {
+      const portalToken = new URLSearchParams(window.location.search).get("token");
+
+      if (!portalToken) {
+        document.getElementById("clientName").textContent = "Lien client invalide";
+        document.getElementById("weekTitle").textContent = "Acces indisponible";
+        document.getElementById("weekState").textContent = "Aucun token client n'a ete fourni.";
+        document.getElementById("successMessage").style.display = "block";
+        document.getElementById("successMessage").textContent =
+          "Ce portail client doit etre ouvert depuis un lien genere dans la fiche client.";
+        document.querySelectorAll("#checkinForm input, #checkinForm textarea, #checkinForm button, #prevWeek, #nextWeek, #weekSelect").forEach(function (node) {
+          node.disabled = true;
+        });
+        return;
+      }
+
+      const weekBadge = document.getElementById("weekBadge");
+      const clientName = document.getElementById("clientName");
+      const heroDescription = document.querySelector(".hero p");
+      const heroMeta = document.querySelector(".hero-meta");
+      const weekTitle = document.getElementById("weekTitle");
+      const weekState = document.getElementById("weekState");
+      const successMessage = document.getElementById("successMessage");
+      const infoCardTitle = document.querySelector(".info-card h4");
+      const infoCardText = document.querySelector(".info-card p");
+      const brandSubline = document.querySelector(".brand-text p");
+
+      if (brandSubline) {
+        brandSubline.textContent = "Portail client";
+      }
+
+      if (infoCardTitle) {
+        infoCardTitle.textContent = "Synchronisation";
+      }
+
+      if (infoCardText) {
+        infoCardText.textContent =
+          "Vos mensurations et vos commentaires sont enregistres sur le meme suivi que celui consulte par le coach.";
+      }
+
+      function replaceNode(id, cloneChildren) {
+        const currentNode = document.getElementById(id);
+        const nextNode = currentNode.cloneNode(Boolean(cloneChildren));
+        currentNode.replaceWith(nextNode);
+        return nextNode;
+      }
+
+      const prevWeekBtn = replaceNode("prevWeek", true);
+      const nextWeekBtn = replaceNode("nextWeek", true);
+      const weekSelect = replaceNode("weekSelect", false);
+      const checkinForm = replaceNode("checkinForm", true);
+
+      const fields = {
+        poids: checkinForm.querySelector("#poids"),
+        epaule: checkinForm.querySelector("#epaule"),
+        pec: checkinForm.querySelector("#pec"),
+        brasDroit: checkinForm.querySelector("#brasDroit"),
+        brasGauche: checkinForm.querySelector("#brasGauche"),
+        nombril: checkinForm.querySelector("#nombril"),
+        hanche: checkinForm.querySelector("#hanche"),
+        fesse: checkinForm.querySelector("#fesse"),
+        cuisseGauche: checkinForm.querySelector("#cuisseGauche"),
+        cuisseDroite: checkinForm.querySelector("#cuisseDroite"),
+        molletDroit: checkinForm.querySelector("#molletDroit"),
+        molletGauche: checkinForm.querySelector("#molletGauche"),
+        commentaire: checkinForm.querySelector("#commentaire")
+      };
+
+      const todayInfo = window.TFBData.getISOWeekInfo(new Date());
+      const state = {
+        portal: null,
+        records: new Map(),
+        selectedWeek: todayInfo.isoWeek,
+        currentYear: todayInfo.isoYear
+      };
+
+      function setStatus(message, tone) {
+        successMessage.textContent = message;
+        successMessage.style.display = "block";
+        successMessage.style.background = tone === "error" ? "#fef2f2" : "#ecfdf3";
+        successMessage.style.borderColor = tone === "error" ? "#fecaca" : "#d1fadf";
+        successMessage.style.color = tone === "error" ? "#991b1b" : "#166534";
+      }
+
+      function getRecordKey(isoYear, isoWeek) {
+        return window.TFBData.formatWeekKey(isoYear, isoWeek);
+      }
+
+      function getSelectedRecord() {
+        const key = getRecordKey(state.currentYear, state.selectedWeek);
+        return state.records.get(key) || {
+          ...window.TFBData.createEmptyCheckin(),
+          isoYear: state.currentYear,
+          isoWeek: state.selectedWeek
+        };
+      }
+
+      function updateWeekOptions() {
+        weekSelect.innerHTML = "";
+
+        for (let week = 1; week <= 52; week += 1) {
+          const option = document.createElement("option");
+          option.value = String(week);
+          option.textContent = `Semaine ${week}`;
+          if (week === state.selectedWeek) {
+            option.selected = true;
+          }
+          weekSelect.appendChild(option);
+        }
+      }
+
+      function updateWeekLabels() {
+        weekBadge.textContent = `Semaine ${state.selectedWeek}`;
+        weekTitle.textContent = `Semaine ${state.selectedWeek}`;
+
+        const currentWeek = todayInfo.isoWeek;
+        const record = getSelectedRecord();
+
+        if (state.selectedWeek === currentWeek) {
+          weekState.textContent = "Semaine en cours";
+        } else if (record.submittedAt) {
+          weekState.textContent = "Semaine enregistree";
+        } else if (state.selectedWeek < currentWeek) {
+          weekState.textContent = "Semaine precedente non renseignee";
+        } else {
+          weekState.textContent = "Semaine a venir";
+        }
+      }
+
+      function renderWeek() {
+        const record = getSelectedRecord();
+
+        Object.keys(fields).forEach(function (key) {
+          fields[key].value = record[key] || "";
+        });
+
+        successMessage.style.display = "none";
+        updateWeekLabels();
+        prevWeekBtn.disabled = state.selectedWeek <= 1;
+        nextWeekBtn.disabled = state.selectedWeek >= 52;
+      }
+
+      function collectValues() {
+        const values = {};
+        Object.keys(fields).forEach(function (key) {
+          values[key] = fields[key].value.trim();
+        });
+        return values;
+      }
+
+      function storeRecord(record) {
+        state.records.set(getRecordKey(record.isoYear, record.isoWeek), record);
+      }
+
+      async function bootstrapPortal() {
+        try {
+          const portal = await window.TFBPortal.getPortalByToken(portalToken);
+
+          if (!portal) {
+            throw new Error("Ce lien client n'est pas reconnu.");
+          }
+
+          state.portal = portal;
+          clientName.textContent = `Bonjour ${portal.first_name} ${portal.last_name}`;
+          heroDescription.textContent =
+            "Renseignez vos mensurations, gardez l'historique de vos semaines et ajoutez vos commentaires personnels.";
+
+          if (heroMeta) {
+            heroMeta.innerHTML = `
+              <div class="meta-pill">${portal.objective || "Suivi client"}</div>
+              <div class="meta-pill">${portal.level || "Suivi actif"}</div>
+              <div class="meta-pill">${portal.coach_name || "Team Fit Brothers"}</div>
+            `;
+          }
+
+          const records = await window.TFBPortal.listCheckinsByToken(portalToken);
+          records.forEach(storeRecord);
+          updateWeekOptions();
+          renderWeek();
+        } catch (error) {
+          clientName.textContent = "Acces indisponible";
+          setStatus(error.message || "Impossible de charger le portail client.", "error");
+          checkinForm.querySelectorAll("input, textarea, button, select").forEach(function (node) {
+            node.disabled = true;
+          });
+        }
+      }
+
+      prevWeekBtn.addEventListener("click", function () {
+        if (state.selectedWeek > 1) {
+          state.selectedWeek -= 1;
+          weekSelect.value = String(state.selectedWeek);
+          renderWeek();
+        }
+      });
+
+      nextWeekBtn.addEventListener("click", function () {
+        if (state.selectedWeek < 52) {
+          state.selectedWeek += 1;
+          weekSelect.value = String(state.selectedWeek);
+          renderWeek();
+        }
+      });
+
+      weekSelect.addEventListener("change", function (event) {
+        state.selectedWeek = Number(event.target.value);
+        renderWeek();
+      });
+
+      checkinForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        try {
+          const record = await window.TFBPortal.saveCheckinByToken(portalToken, collectValues(), {
+            isoYear: state.currentYear,
+            isoWeek: state.selectedWeek
+          });
+          storeRecord(record);
+          renderWeek();
+          setStatus("Vos donnees ont bien ete enregistrees.");
+        } catch (error) {
+          setStatus(error.message || "Impossible d'enregistrer cette semaine.", "error");
+        }
+      });
+
+      bootstrapPortal();
+    })();
   </script>
 </body>
 </html>
