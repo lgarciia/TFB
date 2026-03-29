@@ -18,6 +18,7 @@
   <script src="portal-config.js"></script>
   <script src="teamfit-data.js"></script>
   <script src="portal-data.js"></script>
+  <script src="teamfit-programs.js"></script>
   <script>
     if (!new URLSearchParams(window.location.search).get("token")) {
       window.TFBAuth.requireAuth();
@@ -346,6 +347,154 @@
       font-size: 0.92rem;
     }
 
+    .portal-tabs {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .portal-tab {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 11px 14px;
+      font: inherit;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .portal-tab.active {
+      background: #111827;
+      color: #fff;
+      border-color: #111827;
+    }
+
+    .portal-section {
+      display: none;
+    }
+
+    .portal-section.active {
+      display: block;
+    }
+
+    .program-stack,
+    .meal-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .program-card,
+    .meal-card,
+    .nutrition-overview {
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
+      border-radius: 20px;
+      padding: 18px;
+    }
+
+    .program-head,
+    .meal-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .section-kicker {
+      display: block;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .program-focus {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .exercise-list,
+    .food-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .exercise-row,
+    .food-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 0.8fr));
+      gap: 10px;
+      border: 1px solid #edf2f7;
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .exercise-row strong,
+    .food-row strong {
+      display: block;
+      font-size: 0.92rem;
+    }
+
+    .nutrition-day-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 18px 0;
+    }
+
+    .nutrition-day-tab {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nutrition-day-tab.active {
+      background: #111827;
+      border-color: #111827;
+      color: #fff;
+    }
+
+    .macro-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .macro-pill {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      padding: 12px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
     @media (max-width: 760px) {
       body {
         padding: 14px;
@@ -367,6 +516,12 @@
       .form-card,
       .info-card {
         border-radius: 22px;
+      }
+
+      .exercise-row,
+      .food-row,
+      .macro-grid {
+        grid-template-columns: 1fr;
       }
 
       .actions {
@@ -844,7 +999,11 @@
           const portal = await window.TFBPortal.getPortalByToken(portalToken);
 
           if (!portal) {
-            throw new Error("Ce lien client n'est pas reconnu.");
+            throw new Error(
+              window.TFBPortal.isSupabaseConfigured()
+                ? "Ce lien client n'est pas reconnu. Il a peut-etre ete regenere ou invalide."
+                : "Ce lien a ete cree en mode local. Il fonctionne seulement sur le navigateur qui l'a genere. Pour le partager a un client, activez Supabase puis regenerez le lien."
+            );
           }
 
           state.portal = portal;
@@ -866,6 +1025,10 @@
           renderWeek();
         } catch (error) {
           clientName.textContent = "Acces indisponible";
+          weekTitle.textContent = "Lien client indisponible";
+          weekState.textContent = window.TFBPortal.isSupabaseConfigured()
+            ? "Token client non reconnu."
+            : "Lien genere en mode local.";
           setStatus(error.message || "Impossible de charger le portail client.", "error");
           checkinForm.querySelectorAll("input, textarea, button, select").forEach(function (node) {
             node.disabled = true;
@@ -911,6 +1074,197 @@
       });
 
       bootstrapPortal();
+    })();
+  </script>
+  <script>
+    (function () {
+      const portalToken = new URLSearchParams(window.location.search).get("token");
+
+      if (!portalToken) {
+        return;
+      }
+
+      const hero = document.querySelector(".hero");
+      const weekNav = document.querySelector(".week-nav");
+      const formCard = document.querySelector(".form-card");
+      const infoCard = document.querySelector(".info-card");
+      const page = document.querySelector(".page");
+
+      const tabs = document.createElement("section");
+      tabs.className = "week-nav";
+      tabs.innerHTML = `
+        <div class="week-nav-left">
+          <h3>Votre espace</h3>
+          <p>Naviguez facilement entre vos mensurations, votre entrainement et votre nutrition.</p>
+        </div>
+        <div class="portal-tabs">
+          <button class="portal-tab active" data-tab="checkin">Mensurations</button>
+          <button class="portal-tab" data-tab="training">Entrainement</button>
+          <button class="portal-tab" data-tab="nutrition">Nutrition</button>
+        </div>
+      `;
+      hero.insertAdjacentElement("afterend", tabs);
+
+      const trainingSection = document.createElement("section");
+      trainingSection.className = "form-card portal-section";
+      trainingSection.dataset.section = "training";
+      trainingSection.innerHTML = `<div class="section-head"><h3>Programme d'entrainement</h3><p>Chargement du bloc d'entrainement...</p></div>`;
+
+      const nutritionSection = document.createElement("section");
+      nutritionSection.className = "form-card portal-section";
+      nutritionSection.dataset.section = "nutrition";
+      nutritionSection.innerHTML = `<div class="section-head"><h3>Programme nutrition</h3><p>Chargement du plan nutrition...</p></div>`;
+
+      infoCard.insertAdjacentElement("beforebegin", trainingSection);
+      infoCard.insertAdjacentElement("beforebegin", nutritionSection);
+
+      const viewState = {
+        activeTab: "checkin",
+        activeDay: 0
+      };
+
+      function setTab(nextTab) {
+        viewState.activeTab = nextTab;
+        tabs.querySelectorAll(".portal-tab").forEach(function (button) {
+          button.classList.toggle("active", button.dataset.tab === nextTab);
+        });
+        weekNav.style.display = nextTab === "checkin" ? "flex" : "none";
+        formCard.style.display = nextTab === "checkin" ? "block" : "none";
+        trainingSection.classList.toggle("active", nextTab === "training");
+        nutritionSection.classList.toggle("active", nextTab === "nutrition");
+      }
+
+      function renderTraining(programs) {
+        const training = programs.training;
+        trainingSection.innerHTML = `
+          <div class="section-head">
+            <h3>${training.title}</h3>
+            <p>${training.focus} • ${training.frequency} • ${training.cycle}</p>
+          </div>
+          <div class="program-stack">
+            <div class="nutrition-overview">
+              <div class="program-head">
+                <div>
+                  <div class="section-kicker">Consignes</div>
+                  <h4>Cadre du bloc</h4>
+                </div>
+                <div class="program-focus">${training.frequency}</div>
+              </div>
+              <p><strong>Progression:</strong> ${training.progression}</p>
+              <p style="margin-top:8px;"><strong>Warm-up:</strong> ${training.warmup}</p>
+              <p style="margin-top:8px;"><strong>Note coach:</strong> ${training.coachNote}</p>
+            </div>
+            ${training.sessions.map(function (session) {
+              return `
+                <article class="program-card">
+                  <div class="program-head">
+                    <div>
+                      <div class="section-kicker">${session.label}</div>
+                      <h4>${session.focus}</h4>
+                    </div>
+                    <div class="program-focus">Tonnage cible ${session.tonnage}</div>
+                  </div>
+                  <p style="margin-bottom:12px; color: var(--muted);">${session.notes}</p>
+                  <div class="exercise-list">
+                    ${session.exercises.map(function (exercise) {
+                      return `<div class="exercise-row">
+                        <div><strong>${exercise.name}</strong><span style="color:var(--muted);">${exercise.notes}</span></div>
+                        <div><strong>${exercise.reps}</strong><span style="color:var(--muted);">reps</span></div>
+                        <div><strong>${exercise.sets}</strong><span style="color:var(--muted);">series</span></div>
+                        <div><strong>Execution</strong><span style="color:var(--muted);">controlee</span></div>
+                      </div>`;
+                    }).join("")}
+                  </div>
+                </article>
+              `;
+            }).join("")}
+          </div>
+        `;
+      }
+
+      function renderNutrition(programs) {
+        const nutrition = programs.nutrition;
+        const currentDay = nutrition.dayTypes[viewState.activeDay] || nutrition.dayTypes[0];
+        const totals = window.TFBPrograms.calculateDayTotals(currentDay);
+
+        nutritionSection.innerHTML = `
+          <div class="section-head">
+            <h3>${nutrition.title}</h3>
+            <p>${nutrition.strategy}</p>
+          </div>
+          <div class="nutrition-overview">
+            <div class="program-head">
+              <div>
+                <div class="section-kicker">Hydratation</div>
+                <h4>${nutrition.hydration}</h4>
+              </div>
+              <div class="program-focus">${currentDay.label}</div>
+            </div>
+            <p>${nutrition.coachNote}</p>
+            <div class="macro-grid">
+              <div class="macro-pill">${currentDay.targetCalories} kcal cible</div>
+              <div class="macro-pill">${totals.proteins} g proteines</div>
+              <div class="macro-pill">${totals.glucides} g glucides</div>
+              <div class="macro-pill">${totals.lipids} g lipides</div>
+            </div>
+          </div>
+          <div class="nutrition-day-tabs">
+            ${nutrition.dayTypes.map(function (day, index) {
+              return `<button class="nutrition-day-tab ${index === viewState.activeDay ? "active" : ""}" data-day="${index}">${day.label}</button>`;
+            }).join("")}
+          </div>
+          <div class="meal-stack">
+            ${currentDay.meals.map(function (meal) {
+              return `<article class="meal-card">
+                <div class="meal-head">
+                  <div>
+                    <div class="section-kicker">${meal.label}</div>
+                    <h4>${meal.title}</h4>
+                  </div>
+                </div>
+                <div class="food-list">
+                  ${meal.items.map(function (food) {
+                    return `<div class="food-row">
+                      <div><strong>${food.name}</strong><span style="color:var(--muted);">${food.quantity}</span></div>
+                      <div><strong>${food.kcal}</strong><span style="color:var(--muted);">kcal</span></div>
+                      <div><strong>${food.proteins}</strong><span style="color:var(--muted);">proteines</span></div>
+                      <div><strong>${food.glucides}</strong><span style="color:var(--muted);">glucides</span></div>
+                    </div>`;
+                  }).join("")}
+                </div>
+              </article>`;
+            }).join("")}
+          </div>
+        `;
+
+        nutritionSection.querySelectorAll(".nutrition-day-tab").forEach(function (button) {
+          button.addEventListener("click", function () {
+            viewState.activeDay = Number(button.dataset.day);
+            renderNutrition(programs);
+          });
+        });
+      }
+
+      tabs.addEventListener("click", function (event) {
+        if (event.target.dataset.tab) {
+          setTab(event.target.dataset.tab);
+        }
+      });
+
+      window.TFBPortal.getPortalByToken(portalToken).then(function (portal) {
+        if (!portal) {
+          tabs.style.display = "none";
+          trainingSection.remove();
+          nutritionSection.remove();
+          return;
+        }
+
+        const programs = window.TFBPrograms.getClientPrograms(portal.client_slug);
+        renderTraining(programs);
+        renderNutrition(programs);
+      });
+
+      setTab("checkin");
     })();
   </script>
 </body>

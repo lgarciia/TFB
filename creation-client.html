@@ -15,6 +15,8 @@
 
   <script src="auth-config.js"></script>
   <script src="auth.js"></script>
+  <script src="teamfit-data.js"></script>
+  <script src="teamfit-programs.js"></script>
   <script>
     window.TFBAuth.requireAuth();
   </script>
@@ -286,6 +288,165 @@
       flex-wrap: wrap;
     }
 
+    .module-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .module-tab,
+    .day-tab,
+    .compact-btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 13px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .module-tab.active,
+    .day-tab.active {
+      background: #111827;
+      color: #fff;
+      border-color: #111827;
+    }
+
+    .module-panel {
+      display: none;
+    }
+
+    .module-panel.active {
+      display: block;
+    }
+
+    .profile-grid-cards,
+    .editor-grid,
+    .totals-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .profile-item,
+    .editor-box,
+    .session-card,
+    .meal-card,
+    .day-shell {
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .profile-item span,
+    .editor-box span,
+    .section-kicker {
+      display: block;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .profile-item strong {
+      display: block;
+      font-size: 0.98rem;
+      line-height: 1.45;
+    }
+
+    .session-stack,
+    .meal-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .session-head,
+    .meal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .editor-table {
+      width: 100%;
+      min-width: 620px;
+      border-collapse: collapse;
+    }
+
+    .editor-table th,
+    .editor-table td {
+      border-bottom: 1px solid #eef2f5;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .editor-table th {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      background: #f8fafc;
+    }
+
+    .editor-table td:last-child,
+    .editor-table th:last-child {
+      width: 84px;
+    }
+
+    .editor-table input {
+      min-width: 100px;
+      padding: 10px 11px;
+    }
+
+    .day-tabs,
+    .side-quick {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .day-tabs {
+      margin: 18px 0;
+    }
+
+    .totals-pill,
+    .save-status {
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .save-status {
+      display: none;
+      margin-top: 16px;
+      background: #ecfdf3;
+      color: #166534;
+      border-color: #d1fadf;
+    }
+
     .btn {
       border: 1px solid var(--border);
       background: white;
@@ -423,6 +584,12 @@
 
       .actions .btn {
         width: 100%;
+      }
+
+      .profile-grid-cards,
+      .editor-grid,
+      .totals-row {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -675,5 +842,317 @@
       </aside>
     </section>
   </div>
+  <script>
+    (function () {
+      const sortedClients = window.TFBData.listClients().slice().sort(function (left, right) {
+        return `${left.lastName} ${left.firstName}`.localeCompare(`${right.lastName} ${right.firstName}`, "fr");
+      });
+      const state = {
+        clientSlug: new URLSearchParams(window.location.search).get("client") || "chloe-blaison",
+        activeTab: "profile",
+        activeDay: 0,
+        programs: null
+      };
+
+      const titleNode = document.querySelector(".title-wrap h1");
+      const titleText = document.querySelector(".title-wrap p");
+      const heroTitle = document.querySelector(".hero h2");
+      const heroText = document.querySelector(".hero p");
+      const badgeNode = document.querySelector(".badge");
+      const formCard = document.querySelector(".form-card");
+      const sideCard = document.querySelector(".side-card");
+
+      titleNode.textContent = "Module Creation";
+      titleText.textContent = "Construisez la partie client, les plans d'entrainement et la nutrition.";
+      heroTitle.textContent = "Creation des programmes";
+      heroText.textContent = "Selectionnez un client, preparez son bloc d'entrainement et sa nutrition, puis retrouvez la meme structure cote client dans le portail.";
+      badgeNode.textContent = "Creation coach";
+
+      formCard.innerHTML = `
+        <div class="module-tabs">
+          <button class="module-tab active" data-tab="profile">Client</button>
+          <button class="module-tab" data-tab="training">Entrainement</button>
+          <button class="module-tab" data-tab="nutrition">Nutrition</button>
+        </div>
+        <section class="module-panel active" data-panel="profile"><div id="profilePanel"></div></section>
+        <section class="module-panel" data-panel="training"><div id="trainingPanel"></div></section>
+        <section class="module-panel" data-panel="nutrition"><div id="nutritionPanel"></div></section>
+      `;
+
+      sideCard.innerHTML = `
+        <div class="summary-title">
+          <h3>Client actif</h3>
+          <p id="sideRole">Demo modifiable depuis ce navigateur.</p>
+        </div>
+        <div class="summary-list" id="sideFacts"></div>
+        <div class="note-box">
+          <h4>Synchronisation</h4>
+          <p>La demo de creation reste locale pour le moment. Quand on branchera Supabase, elle pourra remonter partout.</p>
+        </div>
+        <div class="side-quick">
+          <select id="clientSelect"></select>
+          <a href="fiche-client.html" class="btn" id="openFiche">Ouvrir la fiche</a>
+          <a href="suivi-hebdo.html" class="btn" id="openFollow">Ouvrir le suivi hebdo</a>
+          <button type="button" class="btn btn-primary" id="savePrograms">Enregistrer la creation</button>
+        </div>
+        <div class="save-status" id="saveStatus"></div>
+      `;
+
+      const profilePanel = document.getElementById("profilePanel");
+      const trainingPanel = document.getElementById("trainingPanel");
+      const nutritionPanel = document.getElementById("nutritionPanel");
+      const clientSelect = document.getElementById("clientSelect");
+      const saveStatus = document.getElementById("saveStatus");
+      const openFiche = document.getElementById("openFiche");
+      const openFollow = document.getElementById("openFollow");
+
+      clientSelect.innerHTML = sortedClients.map(function (client) {
+        return `<option value="${client.slug}">${client.firstName} ${client.lastName}</option>`;
+      }).join("");
+
+      function currentClient() {
+        return window.TFBData.getClient(state.clientSlug);
+      }
+
+      function metric(label, value) {
+        return `<div class="profile-item"><span>${label}</span><strong>${value || "—"}</strong></div>`;
+      }
+
+      function renderProfile() {
+        const client = currentClient();
+        profilePanel.innerHTML = `
+          <div class="section-head">
+            <h3>Base client</h3>
+            <p>Vue coach en desktop pour cadrer rapidement le profil avant de creer les plans.</p>
+          </div>
+          <div class="profile-grid-cards">
+            ${metric("Nom", `${client.firstName} ${client.lastName}`)}
+            ${metric("Objectif", client.objective)}
+            ${metric("Coach", client.coach)}
+            ${metric("Niveau", client.level)}
+            ${metric("Demarrage", client.startDate)}
+            ${metric("Frequence", client.frequency)}
+            ${metric("Activite", client.activity)}
+            ${metric("Mensurations de base", `${client.height} • ${client.weight}`)}
+          </div>
+          <div class="editor-grid" style="margin-top: 16px;">
+            <div class="editor-box"><span>Objectif detaille</span><p>${client.objectiveDetail}</p></div>
+            <div class="editor-box"><span>Contraintes</span><p>${client.constraints}</p></div>
+            <div class="editor-box"><span>Habitudes</span><p>${client.habits}</p></div>
+            <div class="editor-box"><span>Notes coach</span><p>${client.notes}</p></div>
+          </div>
+        `;
+      }
+
+      function renderTraining() {
+        const training = state.programs.training;
+        trainingPanel.innerHTML = `
+          <div class="section-head"><h3>Programme d'entrainement</h3><p>Basee sur le style de tableau que tu m'as montre, mais adaptee a une edition coach plus propre.</p></div>
+          <div class="editor-grid">
+            <div class="field"><label>Titre</label><input data-type="training-meta" data-key="title" value="${training.title}"></div>
+            <div class="field"><label>Cycle</label><input data-type="training-meta" data-key="cycle" value="${training.cycle}"></div>
+            <div class="field"><label>Frequence</label><input data-type="training-meta" data-key="frequency" value="${training.frequency}"></div>
+            <div class="field"><label>Focus</label><input data-type="training-meta" data-key="focus" value="${training.focus}"></div>
+            <div class="field full"><label>Progression</label><textarea data-type="training-meta" data-key="progression">${training.progression}</textarea></div>
+            <div class="field full"><label>Warm-up / consignes</label><textarea data-type="training-meta" data-key="warmup">${training.warmup}</textarea></div>
+            <div class="field full"><label>Note coach</label><textarea data-type="training-meta" data-key="coachNote">${training.coachNote}</textarea></div>
+          </div>
+          <div class="session-stack">
+            ${training.sessions.map(function (session, sessionIndex) {
+              return `
+                <div class="session-card">
+                  <div class="session-head">
+                    <div class="editor-grid" style="flex: 1 1 580px;">
+                      <div class="field"><label>Seance</label><input data-type="session" data-s="${sessionIndex}" data-key="label" value="${session.label}"></div>
+                      <div class="field"><label>Focus</label><input data-type="session" data-s="${sessionIndex}" data-key="focus" value="${session.focus}"></div>
+                      <div class="field"><label>Tonnage cible</label><input data-type="session" data-s="${sessionIndex}" data-key="tonnage" value="${session.tonnage}"></div>
+                      <div class="field full"><label>Note</label><input data-type="session" data-s="${sessionIndex}" data-key="notes" value="${session.notes}"></div>
+                    </div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                      <button class="compact-btn" data-action="add-exercise" data-s="${sessionIndex}">Ajouter un exercice</button>
+                      <button class="compact-btn" data-action="remove-session" data-s="${sessionIndex}">Supprimer</button>
+                    </div>
+                  </div>
+                  <div class="table-wrap">
+                    <table class="editor-table"><thead><tr><th>Exercice</th><th>Reps range</th><th>Nb de serie</th><th>Note</th><th></th></tr></thead><tbody>
+                      ${session.exercises.map(function (exercise, exerciseIndex) {
+                        return `<tr>
+                          <td><input data-type="exercise" data-s="${sessionIndex}" data-e="${exerciseIndex}" data-key="name" value="${exercise.name}"></td>
+                          <td><input data-type="exercise" data-s="${sessionIndex}" data-e="${exerciseIndex}" data-key="reps" value="${exercise.reps}"></td>
+                          <td><input data-type="exercise" data-s="${sessionIndex}" data-e="${exerciseIndex}" data-key="sets" value="${exercise.sets}"></td>
+                          <td><input data-type="exercise" data-s="${sessionIndex}" data-e="${exerciseIndex}" data-key="notes" value="${exercise.notes}"></td>
+                          <td><button class="compact-btn" data-action="remove-exercise" data-s="${sessionIndex}" data-e="${exerciseIndex}">Retirer</button></td>
+                        </tr>`;
+                      }).join("")}
+                    </tbody></table>
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+          <div class="actions"><button class="btn" data-action="add-session">Ajouter une seance</button></div>
+        `;
+      }
+
+      function renderNutrition() {
+        const nutrition = state.programs.nutrition;
+        const day = nutrition.dayTypes[state.activeDay] || nutrition.dayTypes[0];
+        const totals = window.TFBPrograms.calculateDayTotals(day);
+        nutritionPanel.innerHTML = `
+          <div class="section-head"><h3>Programme nutrition</h3><p>Vue ON et OFF, plus lisible que le tableau source tout en gardant les totaux utiles.</p></div>
+          <div class="editor-grid">
+            <div class="field"><label>Titre</label><input data-type="nutrition-meta" data-key="title" value="${nutrition.title}"></div>
+            <div class="field"><label>Hydratation</label><input data-type="nutrition-meta" data-key="hydration" value="${nutrition.hydration}"></div>
+            <div class="field full"><label>Strategie</label><textarea data-type="nutrition-meta" data-key="strategy">${nutrition.strategy}</textarea></div>
+            <div class="field full"><label>Note coach</label><textarea data-type="nutrition-meta" data-key="coachNote">${nutrition.coachNote}</textarea></div>
+          </div>
+          <div class="day-tabs">${nutrition.dayTypes.map(function (item, index) {
+            return `<button class="day-tab ${index === state.activeDay ? "active" : ""}" data-action="switch-day" data-d="${index}">${item.label}</button>`;
+          }).join("")}</div>
+          <div class="day-shell">
+            <div class="meal-head">
+              <div><span class="section-kicker">${day.label}</span><h3>${day.focus}</h3><p style="margin-top:8px; color:var(--muted);">${day.notes || ""}</p></div>
+              <div class="totals-row">
+                <div class="totals-pill">${day.targetCalories} kcal cible</div>
+                <div class="totals-pill">${totals.kcal} kcal reel</div>
+                <div class="totals-pill">${totals.proteins} P</div>
+                <div class="totals-pill">${totals.glucides} G</div>
+                <div class="totals-pill">${totals.lipids} L</div>
+              </div>
+            </div>
+            <div class="meal-stack">
+              ${day.meals.map(function (meal, mealIndex) {
+                return `<div class="meal-card">
+                  <div class="meal-head"><div><span class="section-kicker">${meal.label}</span><h4>${meal.title}</h4></div><button class="compact-btn" data-action="add-food" data-d="${state.activeDay}" data-m="${mealIndex}">Ajouter un aliment</button></div>
+                  <div class="table-wrap"><table class="editor-table"><thead><tr><th>Aliment</th><th>Quantite</th><th>Kcal</th><th>P</th><th>L</th><th>G</th><th>Fibres</th><th></th></tr></thead><tbody>
+                    ${meal.items.map(function (food, foodIndex) {
+                      return `<tr>
+                        <td><input data-type="food" data-d="${state.activeDay}" data-m="${mealIndex}" data-f="${foodIndex}" data-key="name" value="${food.name}"></td>
+                        <td><input data-type="food" data-d="${state.activeDay}" data-m="${mealIndex}" data-f="${foodIndex}" data-key="quantity" value="${food.quantity}"></td>
+                        <td><input data-type="food" data-d="${state.activeDay}" data-m="${mealIndex}" data-f="${foodIndex}" data-key="kcal" value="${food.kcal}"></td>
+                        <td><input data-type="food" data-d="${state.activeDay}" data-m="${mealIndex}" data-f="${foodIndex}" data-key="proteins" value="${food.proteins}"></td>
+                        <td><input data-type="food" data-d="${state.activeDay}" data-m="${mealIndex}" data-f="${foodIndex}" data-key="lipids" value="${food.lipids}"></td>
+                        <td><input data-type="food" data-d="${state.activeDay}" data-m="${mealIndex}" data-f="${foodIndex}" data-key="glucides" value="${food.glucides}"></td>
+                        <td><input data-type="food" data-d="${state.activeDay}" data-m="${mealIndex}" data-f="${foodIndex}" data-key="fibers" value="${food.fibers}"></td>
+                        <td><button class="compact-btn" data-action="remove-food" data-d="${state.activeDay}" data-m="${mealIndex}" data-f="${foodIndex}">Retirer</button></td>
+                      </tr>`;
+                    }).join("")}
+                  </tbody></table></div>
+                </div>`;
+              }).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      function renderSide() {
+        const client = currentClient();
+        document.getElementById("sideFacts").innerHTML = `
+          <div class="summary-item"><strong>${client.firstName} ${client.lastName}</strong><span>${client.objective} • ${client.level}</span></div>
+          <div class="summary-item"><strong>${state.programs.training.sessions.length} seances</strong><span>${state.programs.training.frequency}</span></div>
+          <div class="summary-item"><strong>${state.programs.nutrition.dayTypes.length} jours nutrition</strong><span>${state.programs.nutrition.hydration}</span></div>
+        `;
+        clientSelect.value = state.clientSlug;
+        openFiche.href = `fiche-client.html?client=${state.clientSlug}`;
+        openFollow.href = `suivi-hebdo.html?client=${state.clientSlug}`;
+      }
+
+      function renderAll() {
+        document.querySelectorAll(".module-tab").forEach(function (button) {
+          button.classList.toggle("active", button.dataset.tab === state.activeTab);
+        });
+        document.querySelectorAll(".module-panel").forEach(function (panel) {
+          panel.classList.toggle("active", panel.dataset.panel === state.activeTab);
+        });
+        renderProfile();
+        renderTraining();
+        renderNutrition();
+        renderSide();
+      }
+
+      function savePrograms() {
+        window.TFBPrograms.saveClientPrograms(state.clientSlug, state.programs);
+        saveStatus.textContent = "Creation enregistree localement pour ce client.";
+        saveStatus.style.display = "block";
+      }
+
+      formCard.addEventListener("click", function (event) {
+        const target = event.target;
+        if (target.dataset.tab) {
+          state.activeTab = target.dataset.tab;
+          renderAll();
+          return;
+        }
+        if (target.dataset.action === "switch-day") {
+          state.activeDay = Number(target.dataset.d);
+          renderNutrition();
+          return;
+        }
+        if (target.dataset.action === "add-session") {
+          state.programs.training.sessions.push(window.TFBPrograms.createSession("Nouvelle seance", "Focus", "0", "Consignes", [window.TFBPrograms.createExercise("Nouvel exercice", "10-12", "3", "Controle")]));
+          renderTraining();
+          return;
+        }
+        if (target.dataset.action === "remove-session") {
+          state.programs.training.sessions.splice(Number(target.dataset.s), 1);
+          renderTraining();
+          return;
+        }
+        if (target.dataset.action === "add-exercise") {
+          state.programs.training.sessions[Number(target.dataset.s)].exercises.push(window.TFBPrograms.createExercise("Nouvel exercice", "10-12", "3", "Execution propre"));
+          renderTraining();
+          return;
+        }
+        if (target.dataset.action === "remove-exercise") {
+          state.programs.training.sessions[Number(target.dataset.s)].exercises.splice(Number(target.dataset.e), 1);
+          renderTraining();
+          return;
+        }
+        if (target.dataset.action === "add-food") {
+          state.programs.nutrition.dayTypes[Number(target.dataset.d)].meals[Number(target.dataset.m)].items.push(window.TFBPrograms.createFood("Nouvel aliment", "100 g", 0, 0, 0, 0, 0));
+          renderNutrition();
+          return;
+        }
+        if (target.dataset.action === "remove-food") {
+          state.programs.nutrition.dayTypes[Number(target.dataset.d)].meals[Number(target.dataset.m)].items.splice(Number(target.dataset.f), 1);
+          renderNutrition();
+        }
+      });
+
+      formCard.addEventListener("input", function (event) {
+        const target = event.target;
+        if (target.dataset.type === "training-meta") {
+          state.programs.training[target.dataset.key] = target.value;
+        } else if (target.dataset.type === "session") {
+          state.programs.training.sessions[Number(target.dataset.s)][target.dataset.key] = target.value;
+        } else if (target.dataset.type === "exercise") {
+          state.programs.training.sessions[Number(target.dataset.s)].exercises[Number(target.dataset.e)][target.dataset.key] = target.value;
+        } else if (target.dataset.type === "nutrition-meta") {
+          state.programs.nutrition[target.dataset.key] = target.value;
+        } else if (target.dataset.type === "food") {
+          state.programs.nutrition.dayTypes[Number(target.dataset.d)].meals[Number(target.dataset.m)].items[Number(target.dataset.f)][target.dataset.key] = target.value;
+        }
+      });
+
+      formCard.addEventListener("change", function (event) {
+        if (event.target.dataset.type === "food") {
+          renderNutrition();
+        }
+      });
+
+      clientSelect.addEventListener("change", function () {
+        state.clientSlug = clientSelect.value;
+        state.activeDay = 0;
+        state.programs = window.TFBPrograms.getClientPrograms(state.clientSlug);
+        window.history.replaceState({}, "", `creation-client.html?client=${state.clientSlug}`);
+        renderAll();
+      });
+
+      document.getElementById("savePrograms").addEventListener("click", savePrograms);
+
+      state.programs = window.TFBPrograms.getClientPrograms(state.clientSlug);
+      renderAll();
+    })();
+  </script>
 </body>
 </html>

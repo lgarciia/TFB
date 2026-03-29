@@ -374,6 +374,7 @@
 
         <div class="actions">
           <a href="suivi-hebdo.html?client=chloe-blaison" class="btn btn-primary" id="weeklyLink">Voir le suivi hebdo</a>
+          <a href="creation-client.html?client=chloe-blaison" class="btn" id="creationLink">Ouvrir le module creation</a>
           <a href="espace-coache.html" class="btn" id="coachSpaceLink">Ouvrir le portail client</a>
         </div>
       </div>
@@ -679,6 +680,11 @@
       const weeklyLink = document.getElementById("weeklyLink");
       if (weeklyLink) {
         weeklyLink.href = `suivi-hebdo.html?client=${portalClientKey}`;
+      }
+
+      const creationLink = document.getElementById("creationLink");
+      if (creationLink) {
+        creationLink.href = `creation-client.html?client=${portalClientKey}`;
       }
 
       const linkLabel = document.querySelector(".link-box .label");
