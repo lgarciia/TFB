@@ -10,6 +10,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
+  <script src="auth-config.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    window.TFBAuth.requireAuth();
+  </script>
+
   <style>
     :root {
       --bg: #f6f7f9;
@@ -352,7 +358,7 @@
   <div class="app">
     <header class="topbar">
       <div class="topbar-left">
-        <a href="index.html" class="back-btn" aria-label="Retour à l’accueil">
+        <a href="accueil.html" class="back-btn" aria-label="Retour à l’accueil">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
             <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
           </svg>
