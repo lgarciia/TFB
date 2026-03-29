@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fiche client - Team Fit Brothers</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --surface-soft: #fafbfc;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      font-family: "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100%;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      padding: 24px;
+    }
+
+    .app {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 6px 2px 2px;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.75);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #111827;
+      transition: 0.2s ease;
+      flex-shrink: 0;
+      backdrop-filter: blur(8px);
+    }
+
+    .back-btn:hover {
+      background: white;
+    }
+
+    .back-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      display: block;
+    }
+
+    .title-wrap h1 {
+      font-size: 1.35rem;
+      letter-spacing: -0.03em;
+      font-weight: 700;
+    }
+
+    .title-wrap p {
+      margin-top: 4px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .brand {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #111827;
+      white-space: nowrap;
+    }
+
+    .hero,
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 28px;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .hero h2 {
+      font-size: clamp(1.7rem, 3vw, 2.35rem);
+      line-height: 1.04;
+      letter-spacing: -0.045em;
+      font-weight: 700;
+    }
+
+    .hero p {
+      margin-top: 10px;
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 760px;
+      font-size: 0.97rem;
+    }
+
+    .hero-tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .tag {
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      border-radius: 13px;
+      padding: 13px 16px;
+      font-weight: 600;
+      transition: 0.2s ease;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.93rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:hover {
+      background: #fafafa;
+    }
+
+    .btn-primary {
+      background: #111827;
+      color: white;
+      border-color: #111827;
+    }
+
+    .btn-primary:hover {
+      background: #0f172a;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .card {
+      padding: 24px;
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      margin-bottom: 18px;
+      letter-spacing: -0.02em;
+      font-weight: 700;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 18px;
+    }
+
+    .info-item {
+      padding-bottom: 14px;
+      border-bottom: 1px solid #f0f2f4;
+    }
+
+    .info-item.full {
+      grid-column: 1 / -1;
+    }
+
+    .info-item:last-child,
+    .info-item.full:last-child {
+      padding-bottom: 0;
+    }
+
+    .label {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .value {
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: #1f2937;
+      line-height: 1.6;
+    }
+
+    .link-box {
+      padding: 16px;
+      border-radius: 16px;
+      background: #fafbfc;
+      border: 1px solid var(--border);
+      margin-top: 18px;
+    }
+
+    .generated-link {
+      word-break: break-all;
+      font-size: 0.9rem;
+      color: #334155;
+      line-height: 1.6;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 13px;
+      margin-top: 10px;
+    }
+
+    .link-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .copy-message {
+      display: none;
+      margin-top: 12px;
+      color: #166534;
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    @media (max-width: 980px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 14px;
+      }
+
+      .topbar,
+      .hero-top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero,
+      .card {
+        border-radius: 20px;
+      }
+
+      .hero,
+      .card {
+        padding: 20px;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions,
+      .link-actions {
+        width: 100%;
+      }
+
+      .actions .btn,
+      .link-actions .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar-left">
+        <a href="fiches-clients.html" class="back-btn" aria-label="Retour aux fiches clients">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
+          </svg>
+        </a>
+
+        <div class="title-wrap">
+          <h1>Fiche client</h1>
+          <p>Consultation complète du dossier client et accès direct aux actions liées au suivi.</p>
+        </div>
+      </div>
+
+      <div class="brand">Team Fit Brothers</div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h2 id="clientFullName">Chloé Blaison</h2>
+          <p id="clientSummary">
+            Cliente suivie dans le cadre d’un accompagnement remise en forme avec suivi hebdomadaire et relevé de mensurations.
+          </p>
+
+          <div class="hero-tags">
+            <span class="tag" id="clientObjectiveTag">Objectif · Remise en forme</span>
+            <span class="tag" id="clientStartTag">Début · 12 janvier 2026</span>
+            <span class="tag">Statut · Actif</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <a href="suivi-hebdo.html?client=chloe-blaison" class="btn btn-primary" id="weeklyLink">Voir le suivi hebdo</a>
+          <a href="espace-coache.html?token=TFB7K2X9Q4M8P1L6R3N5V0ZC" class="btn" id="coachSpaceLink">Ouvrir l’espace coaché</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="content-grid">
+      <section class="card">
+        <h3>Identité</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="label">Prénom</div>
+            <div class="value" id="firstName">Chloé</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Nom</div>
+            <div class="value" id="lastName">Blaison</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Adresse e-mail</div>
+            <div class="value" id="email">chloe.blaison@email.com</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Téléphone</div>
+            <div class="value" id="phone">+33 6 25 18 76 32</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Date de naissance</div>
+            <div class="value" id="birthDate">14/05/1996</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Genre</div>
+            <div class="value" id="gender">Femme</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Informations coaching</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="label">Date de début</div>
+            <div class="value" id="startDate">12/01/2026</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Coach référent</div>
+            <div class="value" id="coach">Team Fit Brothers</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Objectif principal</div>
+            <div class="value" id="objective">Remise en forme</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Niveau</div>
+            <div class="value" id="level">Débutant</div>
+          </div>
+          <div class="info-item full">
+            <div class="label">Détail de l’objectif</div>
+            <div class="value" id="objectiveDetail">
+              Reprendre une activité physique régulière, améliorer l’hygiène de vie et retrouver une meilleure condition générale.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Données de départ</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="label">Taille</div>
+            <div class="value" id="height">168 cm</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Poids</div>
+            <div class="value" id="weight">63 kg</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Âge</div>
+            <div class="value" id="age">29 ans</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Activité quotidienne</div>
+            <div class="value" id="activity">Modéré</div>
+          </div>
+          <div class="info-item full">
+            <div class="label">Fréquence d’entraînement</div>
+            <div class="value" id="frequency">2 à 3 séances / semaine</div>
+          </div>
+          <div class="info-item full">
+            <div class="label">Contraintes / blessures</div>
+            <div class="value" id="constraints">Légère sensibilité au genou gauche, vigilance sur les impacts.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Informations complémentaires</h3>
+        <div class="info-grid">
+          <div class="info-item full">
+            <div class="label">Habitudes de vie / alimentation</div>
+            <div class="value" id="habits">
+              Journées de travail chargées, rythme parfois irrégulier sur les repas, sommeil globalement correct.
+            </div>
+          </div>
+          <div class="info-item full">
+            <div class="label">Notes internes</div>
+            <div class="value" id="notes">
+              Profil motivé, bon potentiel d’adhérence si le cadre reste simple et progressif.
+            </div>
+          </div>
+        </div>
+
+        <div class="link-box">
+          <div class="label">Lien coaché sécurisé</div>
+          <div class="generated-link" id="generatedLink">
+            https://teamfitbrothers.github.io/app/espace-coache.html?token=TFB7K2X9Q4M8P1L6R3N5V0ZC
+          </div>
+
+          <div class="link-actions">
+            <button class="btn" id="generateLinkBtn">Générer un nouveau lien</button>
+            <button class="btn" id="copyLinkBtn">Copier le lien</button>
+            <a href="espace-coache.html?token=TFB7K2X9Q4M8P1L6R3N5V0ZC" class="btn" id="openCoachLink">Ouvrir le lien</a>
+          </div>
+
+          <div class="copy-message" id="copyMessage">Lien copié.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const clients = {
+      "chloe-blaison": {
+        firstName: "Chloé",
+        lastName: "Blaison",
+        email: "chloe.blaison@email.com",
+        phone: "+33 6 25 18 76 32",
+        birthDate: "14/05/1996",
+        gender: "Femme",
+        startDate: "12 janvier 2026",
+        startDateShort: "12/01/2026",
+        coach: "Team Fit Brothers",
+        objective: "Remise en forme",
+        level: "Débutant",
+        objectiveDetail: "Reprendre une activité physique régulière, améliorer l’hygiène de vie et retrouver une meilleure condition générale.",
+        height: "168 cm",
+        weight: "63 kg",
+        age: "29 ans",
+        activity: "Modéré",
+        frequency: "2 à 3 séances / semaine",
+        constraints: "Légère sensibilité au genou gauche, vigilance sur les impacts.",
+        habits: "Journées de travail chargées, rythme parfois irrégulier sur les repas, sommeil globalement correct.",
+        notes: "Profil motivé, bon potentiel d’adhérence si le cadre reste simple et progressif."
+      },
+      "adam-bernier": {
+        firstName: "Adam",
+        lastName: "Bernier",
+        email: "adam.bernier@email.com",
+        phone: "+33 6 11 24 88 10",
+        birthDate: "03/08/1993",
+        gender: "Homme",
+        startDate: "04 janvier 2026",
+        startDateShort: "04/01/2026",
+        coach: "Team Fit Brothers",
+        objective: "Perte de poids",
+        level: "Intermédiaire",
+        objectiveDetail: "Réduction du taux de masse grasse et amélioration de la régularité sur l’activité physique.",
+        height: "178 cm",
+        weight: "92 kg",
+        age: "32 ans",
+        activity: "Sédentaire",
+        frequency: "1 à 2 séances / semaine",
+        constraints: "Douleurs lombaires occasionnelles.",
+        habits: "Repas souvent pris à l’extérieur, rythme professionnel irrégulier.",
+        notes: "Nécessite un cadre nutritionnel simple et tenable."
+      }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const clientKey = params.get("client") || "chloe-blaison";
+    const client = clients[clientKey] || clients["chloe-blaison"];
+
+    function setText(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    setText("clientFullName", `${client.firstName} ${client.lastName}`);
+    setText("clientSummary", `Client suivi dans le cadre d’un accompagnement ${client.objective.toLowerCase()} avec suivi hebdomadaire et relevé de mensurations.`);
+    setText("clientObjectiveTag", `Objectif · ${client.objective}`);
+    setText("clientStartTag", `Début · ${client.startDate}`);
+    setText("firstName", client.firstName);
+    setText("lastName", client.lastName);
+    setText("email", client.email);
+    setText("phone", client.phone);
+    setText("birthDate", client.birthDate);
+    setText("gender", client.gender);
+    setText("startDate", client.startDateShort);
+    setText("coach", client.coach);
+    setText("objective", client.objective);
+    setText("level", client.level);
+    setText("objectiveDetail", client.objectiveDetail);
+    setText("height", client.height);
+    setText("weight", client.weight);
+    setText("age", client.age);
+    setText("activity", client.activity);
+    setText("frequency", client.frequency);
+    setText("constraints", client.constraints);
+    setText("habits", client.habits);
+    setText("notes", client.notes);
+
+    const weeklyUrl = `suivi-hebdo.html?client=${clientKey}`;
+    document.getElementById("weeklyLink").href = weeklyUrl;
+
+    const generatedLink = document.getElementById("generatedLink");
+    const generateLinkBtn = document.getElementById("generateLinkBtn");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const openCoachLink = document.getElementById("openCoachLink");
+    const coachSpaceLink = document.getElementById("coachSpaceLink");
+    const copyMessage = document.getElementById("copyMessage");
+
+    function generateSecureToken(length = 28) {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let token = "";
+      for (let i = 0; i < length; i++) {
+        token += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return token;
+    }
+
+    function buildCoachLink(token) {
+      return `https://teamfitbrothers.github.io/app/espace-coache.html?token=${token}`;
+    }
+
+    let currentToken = "TFB7K2X9Q4M8P1L6R3N5V0ZC";
+    let currentLink = buildCoachLink(currentToken);
+
+    function updateCoachLink() {
+      currentLink = buildCoachLink(currentToken);
+      generatedLink.textContent = currentLink;
+      openCoachLink.href = `espace-coache.html?token=${currentToken}`;
+      coachSpaceLink.href = `espace-coache.html?token=${currentToken}`;
+    }
+
+    generateLinkBtn.addEventListener("click", () => {
+      currentToken = generateSecureToken(28);
+      updateCoachLink();
+      copyMessage.style.display = "none";
+    });
+
+    copyLinkBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(currentLink);
+        copyMessage.textContent = "Lien copié.";
+        copyMessage.style.display = "block";
+      } catch (error) {
+        copyMessage.textContent = "Copie non disponible sur ce navigateur.";
+        copyMessage.style.display = "block";
+      }
+    });
+
+    updateCoachLink();
+  </script>
+</body>
+</html>

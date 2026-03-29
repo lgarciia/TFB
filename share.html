@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Visuels transformation</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background: #f5f7fa;
+  padding: 24px;
+  color: #0f172a;
+}
+
+/* HEADER */
+.header h1 {
+  font-size: 1.4rem;
+}
+.header p {
+  color: #64748b;
+  margin-top: 4px;
+  font-size: 0.9rem;
+}
+
+/* GRID */
+.grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 220px);
+  gap: 16px;
+}
+
+/* CARD */
+.card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card.active {
+  border: 2px solid #111827;
+}
+
+/* STORY */
+.story {
+  width: 100%;
+  aspect-ratio: 9/16;
+  border-radius: 14px;
+  padding: 14px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* THEMES */
+.dark { background: linear-gradient(160deg, #0f172a, #1e293b); }
+.black { background: #020617; }
+.soft { background: linear-gradient(160deg, #1e293b, #334155); }
+.blue { background: linear-gradient(160deg, #1e3a8a, #2563eb); }
+.green { background: linear-gradient(160deg, #065f46, #16a34a); }
+.gold { background: linear-gradient(160deg, #1f2937, #92400e); }
+
+/* TEXT */
+.top { font-size: 0.65rem; opacity: 0.6; }
+.name { font-size: 0.75rem; opacity: 0.8; }
+.big { font-size: 1.8rem; font-weight: 800; }
+.small { font-size: 0.75rem; opacity: 0.7; }
+
+/* CENTER MODEL */
+.center {
+  text-align: center;
+  justify-content: center;
+}
+
+/* ZONES */
+.zones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.zone {
+  font-size: 0.7rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.green-t { color: #4ade80; }
+.red-t { color: #f87171; }
+
+/* BUTTON */
+.actions {
+  margin-top: 20px;
+}
+
+button {
+  background: #111827;
+  color: white;
+  border: none;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>Visuels transformation</h1>
+  <p>Sélectionnez un modèle.</p>
+</div>
+
+<div class="grid">
+
+  <!-- MODEL 1 -->
+  <div class="card active" onclick="selectModel(1)">
+    <div class="story dark" id="model1">
+      <div>
+        <div class="top">TEAM FIT</div>
+        <div class="name">Lucas R.</div>
+        <div class="big">-3.2 kg</div>
+        <div class="small">6 semaines</div>
+      </div>
+      <div class="small">@tfb</div>
+    </div>
+  </div>
+
+  <!-- MODEL 2 -->
+  <div class="card" onclick="selectModel(2)">
+    <div class="story black center" id="model2">
+      <div>
+        <div class="top">TRANSFORMATION</div>
+        <div class="big">-3.2 kg</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODEL 3 -->
+  <div class="card" onclick="selectModel(3)">
+    <div class="story soft" id="model3">
+      <div class="zones">
+        <div class="zone"><span>Nombril</span><span class="green-t">-4</span></div>
+        <div class="zone"><span>Hanche</span><span class="green-t">-2.5</span></div>
+        <div class="zone"><span>Pec</span><span class="red-t">+0.5</span></div>
+        <div class="zone"><span>Bras</span><span>0</span></div>
+      </div>
+      <div class="small">@tfb</div>
+    </div>
+  </div>
+
+  <!-- MODEL 4 -->
+  <div class="card" onclick="selectModel(4)">
+    <div class="story blue center" id="model4">
+      <div>
+        <div class="big">-3.2 kg</div>
+        <div class="small">objectif atteint</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODEL 5 -->
+  <div class="card" onclick="selectModel(5)">
+    <div class="story green" id="model5">
+      <div>
+        <div class="name">Résultat client</div>
+        <div class="big">-3.2 kg</div>
+      </div>
+      <div class="small">Team Fit</div>
+    </div>
+  </div>
+
+  <!-- MODEL 6 -->
+  <div class="card" onclick="selectModel(6)">
+    <div class="story gold center" id="model6">
+      <div>
+        <div class="top">PROGRESSION</div>
+        <div class="big">-3.2</div>
+        <div class="small">kg</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="actions">
+  <button onclick="download()">Télécharger</button>
+</div>
+
+<script>
+let selected = 1;
+
+function selectModel(n) {
+  selected = n;
+  document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
+  document.querySelectorAll(".card")[n-1].classList.add("active");
+}
+
+function download() {
+  const element = document.getElementById("model"+selected);
+
+  html2canvas(element, {
+    scale: 3,
+    backgroundColor: "#0f172a"
+  }).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "visuel.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suivi des coachés - Team Fit Brothers</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --surface-soft: #fafbfc;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #111827;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      font-family: "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100%;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      padding: 24px;
+    }
+
+    .app {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 6px 2px 2px;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.75);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #111827;
+      transition: 0.2s ease;
+      flex-shrink: 0;
+      backdrop-filter: blur(8px);
+    }
+
+    .back-btn:hover {
+      background: white;
+    }
+
+    .back-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      display: block;
+    }
+
+    .title-wrap h1 {
+      font-size: 1.35rem;
+      letter-spacing: -0.03em;
+      font-weight: 700;
+    }
+
+    .title-wrap p {
+      margin-top: 4px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .brand {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #111827;
+      white-space: nowrap;
+    }
+
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .hero h2 {
+      font-size: clamp(1.7rem, 3vw, 2.35rem);
+      line-height: 1.04;
+      letter-spacing: -0.045em;
+      font-weight: 700;
+    }
+
+    .hero p {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.97rem;
+      line-height: 1.65;
+      max-width: 720px;
+    }
+
+    .badge {
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
+      color: #374151;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .search-card,
+    .list-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .search-content {
+      padding: 20px;
+    }
+
+    .search-bar {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font: inherit;
+      font-size: 0.95rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search-bar:focus {
+      border-color: #cbd5e1;
+      box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.08);
+    }
+
+    .section-head {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid #f0f2f4;
+    }
+
+    .section-head h3 {
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+      font-weight: 700;
+    }
+
+    .section-head p {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .clients-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .client-row {
+      display: grid;
+      grid-template-columns: 2.1fr 1.1fr 1fr 0.9fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #f0f2f4;
+      text-decoration: none;
+      color: inherit;
+      transition: 0.18s ease;
+    }
+
+    .client-row:last-child {
+      border-bottom: none;
+    }
+
+    .client-row:hover {
+      background: #fcfcfd;
+    }
+
+    .client-main {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: #111827;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .client-name-wrap {
+      min-width: 0;
+    }
+
+    .client-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #111827;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .client-sub {
+      margin-top: 4px;
+      font-size: 0.87rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .client-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .client-info-label {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+    }
+
+    .client-info-value {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #1f2937;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 11px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      background: #ecfdf3;
+      color: #166534;
+      border: 1px solid #d1fadf;
+      width: fit-content;
+    }
+
+    .open-link {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #111827;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      padding: 28px 20px;
+      color: var(--muted);
+      font-size: 0.94rem;
+      display: none;
+    }
+
+    @media (max-width: 980px) {
+      .client-row {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+
+      .open-link {
+        margin-top: 2px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 14px;
+      }
+
+      .topbar,
+      .hero-top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero,
+      .search-card,
+      .list-card {
+        border-radius: 20px;
+      }
+
+      .hero {
+        padding: 20px;
+      }
+
+      .search-content,
+      .section-head {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .client-row,
+      .empty-state {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar-left">
+        <a href="index.html" class="back-btn" aria-label="Retour à l’accueil">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
+          </svg>
+        </a>
+
+        <div class="title-wrap">
+          <h1>Suivi des coachés</h1>
+          <p>Retrouvez rapidement vos clients et accédez à leur suivi.</p>
+        </div>
+      </div>
+
+      <div class="brand">Team Fit Brothers</div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h2>Liste des clients</h2>
+          <p>
+            Classement alphabétique avec accès direct à chaque fiche de suivi hebdomadaire.
+          </p>
+        </div>
+
+        <div class="badge">Suivi actif</div>
+      </div>
+    </section>
+
+    <section class="search-card">
+      <div class="search-content">
+        <input
+          type="text"
+          id="searchInput"
+          class="search-bar"
+          placeholder="Rechercher un client..."
+        />
+      </div>
+    </section>
+
+    <section class="list-card">
+      <div class="section-head">
+        <h3>Clients enregistrés</h3>
+        <p>Accès direct au suivi hebdomadaire de chaque coaché.</p>
+      </div>
+
+      <div class="clients-list" id="clientsList"></div>
+      <div class="empty-state" id="emptyState">Aucun client ne correspond à votre recherche.</div>
+    </section>
+  </div>
+
+  <script>
+    const clients = [
+      {
+        firstName: "Adam",
+        lastName: "Bernier",
+        email: "adam.bernier@email.com",
+        phone: "+33 6 11 24 88 10",
+        objective: "Perte de poids",
+        startDate: "04/01/2026",
+        status: "Actif"
+      },
+      {
+        firstName: "Camille",
+        lastName: "Robert",
+        email: "camille.robert@email.com",
+        phone: "+33 6 19 47 20 88",
+        objective: "Recomposition corporelle",
+        startDate: "15/02/2026",
+        status: "Actif"
+      },
+      {
+        firstName: "Chloé",
+        lastName: "Blaison",
+        email: "chloe.blaison@email.com",
+        phone: "+33 6 25 18 76 32",
+        objective: "Remise en forme",
+        startDate: "12/01/2026",
+        status: "Actif"
+      },
+      {
+        firstName: "Enzo",
+        lastName: "Martel",
+        email: "enzo.martel@email.com",
+        phone: "+33 6 44 81 12 29",
+        objective: "Prise de masse",
+        startDate: "08/03/2026",
+        status: "Actif"
+      },
+      {
+        firstName: "Jade",
+        lastName: "Morel",
+        email: "jade.morel@email.com",
+        phone: "+33 6 66 21 40 18",
+        objective: "Perte de poids",
+        startDate: "20/01/2026",
+        status: "Actif"
+      },
+      {
+        firstName: "Lucas",
+        lastName: "Renaud",
+        email: "lucas.renaud@email.com",
+        phone: "+33 6 03 15 77 92",
+        objective: "Performance sportive",
+        startDate: "27/02/2026",
+        status: "Actif"
+      },
+      {
+        firstName: "Manon",
+        lastName: "Petit",
+        email: "manon.petit@email.com",
+        phone: "+33 6 74 13 98 51",
+        objective: "Recomposition corporelle",
+        startDate: "09/02/2026",
+        status: "Actif"
+      },
+      {
+        firstName: "Noah",
+        lastName: "Girard",
+        email: "noah.girard@email.com",
+        phone: "+33 6 38 94 22 47",
+        objective: "Remise en forme",
+        startDate: "05/03/2026",
+        status: "Actif"
+      },
+      {
+        firstName: "Sarah",
+        lastName: "Leclerc",
+        email: "sarah.leclerc@email.com",
+        phone: "+33 6 57 42 61 05",
+        objective: "Perte de poids",
+        startDate: "18/01/2026",
+        status: "Actif"
+      },
+      {
+        firstName: "Thomas",
+        lastName: "Dumont",
+        email: "thomas.dumont@email.com",
+        phone: "+33 6 22 67 83 11",
+        objective: "Prise de masse",
+        startDate: "01/03/2026",
+        status: "Actif"
+      }
+    ];
+
+    const clientsList = document.getElementById("clientsList");
+    const searchInput = document.getElementById("searchInput");
+    const emptyState = document.getElementById("emptyState");
+
+    const sortedClients = [...clients].sort((a, b) => {
+      const fullA = `${a.lastName} ${a.firstName}`.toLowerCase();
+      const fullB = `${b.lastName} ${b.firstName}`.toLowerCase();
+      return fullA.localeCompare(fullB, "fr");
+    });
+
+    function getInitials(firstName, lastName) {
+      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    }
+
+    function renderClients(list) {
+      clientsList.innerHTML = "";
+
+      if (!list.length) {
+        emptyState.style.display = "block";
+        return;
+      }
+
+      emptyState.style.display = "none";
+
+      list.forEach((client) => {
+        const row = document.createElement("a");
+        row.className = "client-row";
+        row.href = "suivi-hebdo.html";
+
+        row.innerHTML = `
+          <div class="client-main">
+            <div class="avatar">${getInitials(client.firstName, client.lastName)}</div>
+            <div class="client-name-wrap">
+              <div class="client-name">${client.firstName} ${client.lastName}</div>
+              <div class="client-sub">${client.email}</div>
+            </div>
+          </div>
+
+          <div class="client-info">
+            <div class="client-info-label">Objectif</div>
+            <div class="client-info-value">${client.objective}</div>
+          </div>
+
+          <div class="client-info">
+            <div class="client-info-label">Début</div>
+            <div class="client-info-value">${client.startDate}</div>
+          </div>
+
+          <div class="client-info">
+            <div class="client-info-label">Statut</div>
+            <div class="status">${client.status}</div>
+          </div>
+
+          <div class="open-link">Ouvrir →</div>
+        `;
+
+        clientsList.appendChild(row);
+      });
+    }
+
+    searchInput.addEventListener("input", (e) => {
+      const value = e.target.value.trim().toLowerCase();
+
+      const filtered = sortedClients.filter((client) => {
+        const fullName = `${client.firstName} ${client.lastName}`.toLowerCase();
+        const reverseName = `${client.lastName} ${client.firstName}`.toLowerCase();
+        return (
+          fullName.includes(value) ||
+          reverseName.includes(value) ||
+          client.email.toLowerCase().includes(value) ||
+          client.objective.toLowerCase().includes(value)
+        );
+      });
+
+      renderClients(filtered);
+    });
+
+    renderClients(sortedClients);
+  </script>
+</body>
+</html>

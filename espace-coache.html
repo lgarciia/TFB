@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Espace coaché - Team Fit Brothers</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #111827;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --success-bg: #ecfdf3;
+      --success-border: #d1fadf;
+      --success-text: #166534;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      font-family: "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100%;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      padding: 24px;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .topbar,
+    .hero,
+    .week-nav,
+    .form-card,
+    .info-card {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #111827, #334155);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+
+    .brand-text h1 {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-text p {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .week-badge {
+      background: #111827;
+      color: white;
+      padding: 11px 14px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .hero {
+      padding: 30px;
+    }
+
+    .hero h2 {
+      font-size: clamp(1.9rem, 3vw, 2.7rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.7;
+      max-width: 760px;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .meta-pill {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .week-nav {
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .week-nav-left h3 {
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .week-nav-left p {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .week-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn:hover {
+      background: #f8fafc;
+      transform: translateY(-1px);
+    }
+
+    .week-select {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+      font-weight: 600;
+      color: var(--text);
+      outline: none;
+      min-width: 150px;
+    }
+
+    .week-select:focus {
+      border-color: #c7d2fe;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+
+    .form-card {
+      padding: 28px;
+    }
+
+    .section-head {
+      margin-bottom: 20px;
+    }
+
+    .section-head h3 {
+      font-size: 1.12rem;
+      letter-spacing: -0.02em;
+    }
+
+    .section-head p {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 14px;
+      padding: 14px 15px;
+      font: inherit;
+      color: var(--text);
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: #c7d2fe;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .week-state {
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .submit-btn {
+      border: none;
+      background: #111827;
+      color: white;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .info-card {
+      padding: 22px 24px;
+    }
+
+    .info-card h4 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    .info-card p {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 0.93rem;
+    }
+
+    .success-message {
+      display: none;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success-text);
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 14px;
+      }
+
+      .topbar,
+      .week-nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar,
+      .hero,
+      .week-nav,
+      .form-card,
+      .info-card {
+        border-radius: 22px;
+      }
+
+      .actions {
+        align-items: stretch;
+      }
+
+      .submit-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">TF</div>
+        <div class="brand-text">
+          <h1>Team Fit Brothers</h1>
+          <p>Espace coaché</p>
+        </div>
+      </div>
+
+      <div class="week-badge" id="weekBadge">Semaine 12</div>
+    </header>
+
+    <section class="hero">
+      <h2 id="clientName">Bonjour Chloé Blaison</h2>
+      <p>
+        Vous pouvez compléter la semaine en cours, consulter vos semaines précédentes
+        ou modifier une semaine déjà remplie si nécessaire.
+      </p>
+
+      <div class="hero-meta">
+        <div class="meta-pill">Suivi hebdomadaire</div>
+        <div class="meta-pill">Historique modifiable</div>
+        <div class="meta-pill">Commentaire personnel</div>
+      </div>
+    </section>
+
+    <section class="week-nav">
+      <div class="week-nav-left">
+        <h3 id="weekTitle">Semaine 12</h3>
+        <p>Navigation entre les différentes semaines du suivi.</p>
+      </div>
+
+      <div class="week-nav-right">
+        <button class="btn" id="prevWeek">← Semaine précédente</button>
+        <select id="weekSelect" class="week-select"></select>
+        <button class="btn" id="nextWeek">Semaine suivante →</button>
+      </div>
+    </section>
+
+    <section class="form-card">
+      <div class="section-head">
+        <h3>Formulaire de saisie</h3>
+        <p>Les données affichées correspondent à la semaine sélectionnée.</p>
+      </div>
+
+      <form id="checkinForm">
+        <div class="grid">
+          <div class="field">
+            <label for="poids">Poids</label>
+            <input type="number" id="poids" step="0.1" placeholder="Ex. 82.4" />
+          </div>
+
+          <div class="field">
+            <label for="epaule">Épaule</label>
+            <input type="number" id="epaule" step="0.1" placeholder="Ex. 118" />
+          </div>
+
+          <div class="field">
+            <label for="pec">Pec</label>
+            <input type="number" id="pec" step="0.1" placeholder="Ex. 102" />
+          </div>
+
+          <div class="field">
+            <label for="brasDroit">Bras droit</label>
+            <input type="number" id="brasDroit" step="0.1" placeholder="Ex. 34" />
+          </div>
+
+          <div class="field">
+            <label for="brasGauche">Bras gauche</label>
+            <input type="number" id="brasGauche" step="0.1" placeholder="Ex. 33.5" />
+          </div>
+
+          <div class="field">
+            <label for="nombril">Nombril</label>
+            <input type="number" id="nombril" step="0.1" placeholder="Ex. 91" />
+          </div>
+
+          <div class="field">
+            <label for="hanche">Hanche</label>
+            <input type="number" id="hanche" step="0.1" placeholder="Ex. 98" />
+          </div>
+
+          <div class="field">
+            <label for="fesse">Fesse</label>
+            <input type="number" id="fesse" step="0.1" placeholder="Ex. 101" />
+          </div>
+
+          <div class="field">
+            <label for="cuisseGauche">Cuisse gauche</label>
+            <input type="number" id="cuisseGauche" step="0.1" placeholder="Ex. 58" />
+          </div>
+
+          <div class="field">
+            <label for="cuisseDroite">Cuisse droite</label>
+            <input type="number" id="cuisseDroite" step="0.1" placeholder="Ex. 58.5" />
+          </div>
+
+          <div class="field">
+            <label for="molletDroit">Mollet droit</label>
+            <input type="number" id="molletDroit" step="0.1" placeholder="Ex. 37" />
+          </div>
+
+          <div class="field">
+            <label for="molletGauche">Mollet gauche</label>
+            <input type="number" id="molletGauche" step="0.1" placeholder="Ex. 36.5" />
+          </div>
+
+          <div class="field full">
+            <label for="commentaire">Commentaire</label>
+            <textarea
+              id="commentaire"
+              placeholder="Ajoutez un commentaire sur votre semaine, vos sensations, vos difficultés ou toute information utile..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <div class="week-state" id="weekState">Semaine en cours</div>
+          <button type="submit" class="submit-btn">Enregistrer les modifications</button>
+        </div>
+
+        <div class="success-message" id="successMessage">
+          Les données de cette semaine ont bien été enregistrées.
+        </div>
+      </form>
+    </section>
+
+    <section class="info-card">
+      <h4>Fonctionnement prévu</h4>
+      <p>
+        Plus tard, chaque semaine sera reliée au profil du coaché via un lien unique et les
+        informations enregistrées ici remonteront automatiquement dans l’outil du coach.
+      </p>
+    </section>
+  </div>
+
+  <script>
+    function getWeekNumber(date) {
+      const currentDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      const dayNum = currentDate.getUTCDay() || 7;
+      currentDate.setUTCDate(currentDate.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(currentDate.getUTCFullYear(), 0, 1));
+      return Math.ceil((((currentDate - yearStart) / 86400000) + 1) / 7);
+    }
+
+    const now = new Date();
+    const currentWeek = getWeekNumber(now);
+
+    const params = new URLSearchParams(window.location.search);
+    const clientParam = params.get("client");
+
+    if (clientParam) {
+      const formattedName = clientParam
+        .split("-")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+      document.getElementById("clientName").textContent = `Bonjour ${formattedName}`;
+    }
+
+    const weekBadge = document.getElementById("weekBadge");
+    const weekTitle = document.getElementById("weekTitle");
+    const weekSelect = document.getElementById("weekSelect");
+    const weekState = document.getElementById("weekState");
+    const prevWeekBtn = document.getElementById("prevWeek");
+    const nextWeekBtn = document.getElementById("nextWeek");
+    const form = document.getElementById("checkinForm");
+    const successMessage = document.getElementById("successMessage");
+
+    const fields = {
+      poids: document.getElementById("poids"),
+      epaule: document.getElementById("epaule"),
+      pec: document.getElementById("pec"),
+      brasDroit: document.getElementById("brasDroit"),
+      brasGauche: document.getElementById("brasGauche"),
+      nombril: document.getElementById("nombril"),
+      hanche: document.getElementById("hanche"),
+      fesse: document.getElementById("fesse"),
+      cuisseGauche: document.getElementById("cuisseGauche"),
+      cuisseDroite: document.getElementById("cuisseDroite"),
+      molletDroit: document.getElementById("molletDroit"),
+      molletGauche: document.getElementById("molletGauche"),
+      commentaire: document.getElementById("commentaire")
+    };
+
+    const weeklyData = {};
+
+    for (let week = 1; week <= 52; week++) {
+      weeklyData[week] = {
+        poids: "",
+        epaule: "",
+        pec: "",
+        brasDroit: "",
+        brasGauche: "",
+        nombril: "",
+        hanche: "",
+        fesse: "",
+        cuisseGauche: "",
+        cuisseDroite: "",
+        molletDroit: "",
+        molletGauche: "",
+        commentaire: ""
+      };
+    }
+
+    weeklyData[currentWeek] = {
+      poids: "81.4",
+      epaule: "117.8",
+      pec: "101.2",
+      brasDroit: "33.8",
+      brasGauche: "33.3",
+      nombril: "89.8",
+      hanche: "97.2",
+      fesse: "100.0",
+      cuisseGauche: "57.4",
+      cuisseDroite: "57.9",
+      molletDroit: "36.8",
+      molletGauche: "36.3",
+      commentaire: "Bonne semaine dans l’ensemble, sensations correctes à l’entraînement."
+    };
+
+    if (currentWeek > 1) {
+      weeklyData[currentWeek - 1] = {
+        poids: "81.8",
+        epaule: "118.0",
+        pec: "101.6",
+        brasDroit: "34.0",
+        brasGauche: "33.4",
+        nombril: "90.3",
+        hanche: "97.6",
+        fesse: "100.4",
+        cuisseGauche: "57.8",
+        cuisseDroite: "58.1",
+        molletDroit: "36.9",
+        molletGauche: "36.4",
+        commentaire: "Semaine un peu plus fatigante mais globalement correcte."
+      };
+    }
+
+    let selectedWeek = currentWeek;
+
+    for (let week = 1; week <= 52; week++) {
+      const option = document.createElement("option");
+      option.value = week;
+      option.textContent = `Semaine ${week}`;
+      if (week === currentWeek) option.selected = true;
+      weekSelect.appendChild(option);
+    }
+
+    function updateWeekLabels() {
+      weekBadge.textContent = `Semaine ${selectedWeek}`;
+      weekTitle.textContent = `Semaine ${selectedWeek}`;
+      weekState.textContent =
+        selectedWeek === currentWeek
+          ? "Semaine en cours"
+          : selectedWeek < currentWeek
+          ? "Semaine précédente modifiable"
+          : "Semaine future modifiable";
+    }
+
+    function loadWeekData(week) {
+      const data = weeklyData[week];
+      Object.keys(fields).forEach((key) => {
+        fields[key].value = data[key] || "";
+      });
+      successMessage.style.display = "none";
+    }
+
+    function saveWeekData(week) {
+      Object.keys(fields).forEach((key) => {
+        weeklyData[week][key] = fields[key].value;
+      });
+    }
+
+    function goToWeek(week) {
+      if (week < 1 || week > 52) return;
+      saveWeekData(selectedWeek);
+      selectedWeek = week;
+      weekSelect.value = week;
+      updateWeekLabels();
+      loadWeekData(week);
+    }
+
+    prevWeekBtn.addEventListener("click", () => {
+      if (selectedWeek > 1) goToWeek(selectedWeek - 1);
+    });
+
+    nextWeekBtn.addEventListener("click", () => {
+      if (selectedWeek < 52) goToWeek(selectedWeek + 1);
+    });
+
+    weekSelect.addEventListener("change", (e) => {
+      goToWeek(Number(e.target.value));
+    });
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      saveWeekData(selectedWeek);
+      successMessage.style.display = "block";
+    });
+
+    updateWeekLabels();
+    loadWeekData(selectedWeek);
+  </script>
+</body>
+</html>
